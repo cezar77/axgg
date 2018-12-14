@@ -52,36 +52,37 @@ class Household(models.Model):
 
 
 class Person(models.Model):
-    pass
-#    name = JSONField(
-#        default=dict,
-#        validators=[JsonSchemaValidator(limit_value=NAME_SCHEMA)]
-#    )
-#    language = models.CharField(max_length=2, choices=LANGUAGES)
-#    sex = models.CharField(max_length=1, choices=SEXES)
-#    birthdate = models.DateField()
-#    phone = models.CharField(max_length=20)
-#    roles = ArrayField(models.CharField(max_length=1, choices=ROLES))
-#    email = models.EmailField(max_length=100, blank=True)
-#    address = models.CharField(max_length=200, blank=True)
-#    organisation = models.CharField(max_length=50, blank=True)
-#    household = models.ForeignKey(
-#        'Household',
-#        related_name='people',
-#        on_delete=models.DO_NOTHING,
-#        null=True, blank=True
-#    )
-#
-#    class Meta:
-#        verbose_name_plural = 'People'
-#
-#    @cached_property
-#    def full_name(self):
-#        order = {'first': 1, 'middle': 2, 'last': 3}
-#        name = list(self.name.items())
-#        name.sort(key = lambda x: order[x[0]])
-#        name = [x[1] for x in name]
-#        return ' '.join(name)
+    first_name = models.CharField(max_length=30)
+    middle_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30)
+    language = models.CharField(max_length=2, choices=LANGUAGES)
+    sex = models.CharField(max_length=1, choices=SEXES)
+    birthdate = JSONField(
+        default=dict,
+        validators=[JsonSchemaValidator(limit_value=DATE_SCHEMA)]
+    )
+    phone = models.CharField(max_length=20)
+    roles = ArrayField(models.CharField(max_length=1, choices=ROLES))
+    email = models.EmailField(max_length=100, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    organisation = models.CharField(max_length=50, blank=True)
+    household = models.ForeignKey(
+        'Household',
+        related_name='people',
+        on_delete=models.DO_NOTHING,
+        null=True, blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'People'
+
+    @cached_property
+    def full_name(self):
+        name_parts = [self.first_name, self.last_name]
+        if self.middle_name:
+            name_parts.insert(1, self.middle_name)
+        return ' '.join(name_parts)
+
 
 class Log(models.Model):
     uuid = models.CharField(max_length=100)

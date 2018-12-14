@@ -32,6 +32,19 @@ NAME_SCHEMA = {
     }
 }
 
+DATE_SCHEMA = {
+    'day': {
+        'type': 'integer'
+    },
+    'month': {
+        'type': 'integer'
+    },
+    'year': {
+        'required': True,
+        'type': 'integer'
+    }
+}
+
 STATUS = (
     ('NEW', 'new'),
     ('PROCESSING', 'processing'),
