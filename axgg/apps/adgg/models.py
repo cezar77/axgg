@@ -3,8 +3,22 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.gis.db import models
 from django.utils.functional import cached_property
   
+from postgres_composite_types import CompositeType
+
 from .constants import *
 from .validators import JsonSchemaValidator
+
+
+class FarmPerson(CompositeType):
+    first_name = models.CharField(max_length=30)
+    middle_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30)
+    language = models.CharField(max_length=2, choices=LANGUAGES)
+    sex = models.CharField(max_length=1, choices=SEXES)
+    phone = models.CharField(max_length=20)
+
+    class Meta:
+        db_type = 'farm_person'
 
 
 class Country(models.Model):
@@ -35,6 +49,9 @@ class Household(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField()
     uuid = models.CharField(max_length=100)
+    farmer = FarmPerson.Field()
+    head = FarmPerson.Field()
+    feedback_members = ArrayField(base_field=FarmPerson.Field())
 
     def __str__(self):
         return '{} from {}'.format(
