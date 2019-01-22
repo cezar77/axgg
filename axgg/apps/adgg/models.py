@@ -1,6 +1,6 @@
-from django.contrib.postgres.fields import JSONField
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import JSONField
+from django.utils.functional import cached_property
 
 
 class Household(models.Model):
@@ -21,10 +21,14 @@ class Household(models.Model):
             self.registration_date.strftime('%d %B %Y')
         )
 
-    #@cached_property
-    #def longitude(self):
-    #    return self.geolocation.x
+    @cached_property
+    def longitude(self):
+        if self.geolocation:
+            return self.geolocation.x
+        return None
 
-    #@cached_property
-    #def latitude(self):
-    #    return self.geolocation.y
+    @cached_property
+    def latitude(self):
+        if self.geolocation:
+            return self.geolocation.y
+        return None
