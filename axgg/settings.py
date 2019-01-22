@@ -87,6 +87,22 @@ DATABASES = {
         'HOST': credentials.get('HOST'),
         'PORT': credentials.get('PORT')
     },
+    'adggtnz': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'adggtnz',
+        'USER': credentials.get('ADGG_USER'),
+        'PASSWORD': credentials.get('ADGG_PASSWORD'),
+        'HOST': credentials.get('ADGG_HOST'),
+        'PORT': credentials.get('ADGG_PORT')
+    },
+    'adggeth': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'adggeth',
+        'USER': credentials.get('ADGG_USER'),
+        'PASSWORD': credentials.get('ADGG_PASSWORD'),
+        'HOST': credentials.get('ADGG_HOST'),
+        'PORT': credentials.get('ADGG_PORT')
+    },
 }
 
 
