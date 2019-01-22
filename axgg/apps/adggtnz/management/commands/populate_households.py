@@ -10,6 +10,7 @@ from django.contrib.gis.geos import Point
 
 from axgg.apps.adgg.models import Country
 from axgg.apps.adgg.models import Household
+from axgg.apps.adgg.models import FarmPerson
 from axgg.apps.adgg.models import Log
 
 
@@ -96,6 +97,35 @@ class Command(BaseCommand):
         """
         return iso8601.parse_date(value)
 
+    def transform_name(self, value):
+        """
+        Extract first, middle and last name from name.
+        """
+        if value is None:
+            return ('', '', '')
+        name = re.sub(r'\(.*?\)', '', value)
+        name = name.replace('.', ' ')
+        name = name.replace('  ', ' ')
+        name_parts = name.split(' ')
+        if not len(name_parts):
+            return ('', '', '')
+        first_name = name_parts[0].capitalize()
+        last_name = name_parts[len(name_parts)-1].capitalize()
+        middle_name = ' '.join(name_parts[1:len(name_parts)-1]).capitalize()
+        return first_name, middle_name, last_name
+
+    def transform_gender(self, value):
+        if value == '1':
+            return 'M'
+        elif value == '2':
+            return 'F'
+
+    def transform_is_household_head(self, value):
+        if value == '0':
+            return False
+        elif value == '1':
+            return True
+
     def check_farm_is_registered(self, result):
         farm_registered = result.get('farmregistered', None)
         if farm_registered == '1' or farm_registered is None:
@@ -126,6 +156,49 @@ class Command(BaseCommand):
             return
         gps_data = self.transform_gpsloc(gpsloc)
 
+        farmer_name = self.transform_name(result.get('farmerdetails/farmername'))
+        farmer_phone = result.get('farmerdetails/farmermobile')
+        farmer_gender = self.transform_gender(result.get('farmerdetails/farmergender'))
+        farmer_hhhead = self.transform_is_household_head(result.get('farmerdetails/farrmerhhhead'))
+
+        farmer = head =FarmPerson(
+            first_name=farmer_name[0],
+            middle_name=farmer_name[1],
+            last_name=farmer_name[2],
+            language='SW',
+            sex=farmer_gender,
+            phone=farmer_phone
+        )
+
+        if farmer_hhhead == False:
+            head_name = self.transform_name(result.get('hhheaddetails/hhhname'))
+            head_phone = result.get('hhheaddetails/hhhmobile')
+            head_gender = self.transform_gender(result.get('hhheaddetails/hhhgender'))
+            head = FarmPerson(
+                first_name=head_name[0],
+                middle_name=head_name[1],
+                last_name=head_name[2],
+                language='SW',
+                sex=head_gender,
+                phone=head_phone
+            )
+        print(head)
+
+        feedback_members = []
+        for member in result.get('rpt_b_membrs'):
+            member_name = self.transform_name(member.get('rpt_b_membrs/rpt_b_membrs_layout/name'))
+            member_phone = member.get('rpt_b_membrs/rpt_b_membrs_layout/mobile')
+            member_gender = self.transform_gender(member.get('rpt_b_membrs/rpt_b_membrs_layout/gender'))
+            feedback_member = FarmPerson(
+                first_name=member_name[0],
+                middle_name=member_name[1],
+                last_name=member_name[2],
+                language='SW',
+                sex=member_gender,
+                phone=member_phone
+            )
+            feedback_members.append(feedback_member)
+
         try:
             # check if a household object exists
             Household.objects.get(
@@ -146,7 +219,10 @@ class Command(BaseCommand):
                 country=country,
                 registration_date=registration_date,
                 active=True,
-                uuid=uuid
+                uuid=uuid,
+                farmer=farmer,
+                head=head,
+                feedback_members=feedback_members
             )
             self.stdout.write(
                 self.style.SUCCESS(
