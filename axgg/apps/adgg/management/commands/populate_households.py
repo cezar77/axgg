@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.gis.geos import Point
 
 from axgg.apps.adgg.models import Household
-from axgg.apps.adggtnz.models import ViewAllfarmers
+from axgg.apps.adggtnz.models import ViewAllfarmers as tnzViewAllfarmers
 
 
 def country_iso_code(string):
@@ -18,6 +18,7 @@ def country_iso_code(string):
 class Command(BaseCommand):
     help = ('Populate the households database table with values parsed'
             ' from the old database.')
+    countries = {'eth': '', 'tnz': tnzViewAllfarmers}
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -33,7 +34,8 @@ class Command(BaseCommand):
         it into the new database.
         """
         country = options['country_code']
-        qs = ViewAllfarmers.objects.all()
+        model = self.check_country(country)
+        qs = model.objects.all()
         print(qs.count())
         for item in qs:
             registration_date = item.regdate
@@ -105,3 +107,8 @@ class Command(BaseCommand):
     @staticmethod
     def get_hdop(hdop):
         return round(float(hdop), 1)
+
+    def check_country(self, country):
+        if country not in self.countries:
+            raise ValueError('{country} is not a valid value'.format(country=country))
+        return self.countries[country]
