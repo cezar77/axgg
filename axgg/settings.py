@@ -85,7 +85,7 @@ DATABASES = {
         'USER': credentials.get('USER'),
         'PASSWORD': credentials.get('PASSWORD'),
         'HOST': credentials.get('HOST'),
-        'PORT': credentials.get('PORT')
+        'PORT': credentials.get('PORT'),
     },
     'adggtnz': {
         'ENGINE': 'django.db.backends.mysql',
@@ -93,7 +93,7 @@ DATABASES = {
         'USER': credentials.get('ADGG_USER'),
         'PASSWORD': credentials.get('ADGG_PASSWORD'),
         'HOST': credentials.get('ADGG_HOST'),
-        'PORT': credentials.get('ADGG_PORT')
+        'PORT': credentials.get('ADGG_PORT'),
     },
     'adggeth': {
         'ENGINE': 'django.db.backends.mysql',
@@ -101,9 +101,12 @@ DATABASES = {
         'USER': credentials.get('ADGG_USER'),
         'PASSWORD': credentials.get('ADGG_PASSWORD'),
         'HOST': credentials.get('ADGG_HOST'),
-        'PORT': credentials.get('ADGG_PORT')
+        'PORT': credentials.get('ADGG_PORT'),
     },
 }
+
+if 'test' in sys.argv:
+    DATABASES = {'default': DATABASES['default']}
 
 DATABASE_ROUTERS = ['axgg.apps.adggtnz.routers.AdggtnzRouter']
 
